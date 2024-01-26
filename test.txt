@@ -1,40 +1,42 @@
 pipeline {
     agent any
-    
+
     stages {
-        stage('Build') {
-            steps {
-                echo 'Building...'
-            }
-        }
-        
-        stage('Test') {
-            steps {
-                echo 'Testing...'
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-            }
-        }
-        
         stage('Approval') {
             steps {
                 script {
-                    // Prompt for approval from user 'test'
-                    input message: 'Do you want to proceed with the deployment?', submitter: 'test'
+                    // Prompt for approval
+                    def userInput = input(
+                        id: 'userInput',
+                        message: 'Do you want to trigger the Freestyle job?',
+                        parameters: [choice(name: 'Proceed', choices: 'Yes|No', description: 'Choose whether to proceed')]
+                    )
+                    
+                    // Check the user's response
+                    if (userInput == 'Yes') {
+                        echo 'Approval received. Proceeding to trigger the job.'
+                    } else {
+                        error 'Job triggering aborted.'
+                    }
                 }
             }
         }
+
+        stage('Trigger Freestyle Job') {
+            steps {
+                script {
+                    // Trigger the Freestyle job by name
+                    build job: 'YourFreestyleJobName', wait: false
+                }
+            }
+        }
+        // Add other stages if needed
     }
-    
+
     post {
         success {
             echo 'Pipeline completed successfully!'
         }
-        
         failure {
             echo 'Pipeline failed!'
         }
