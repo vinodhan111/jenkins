@@ -1,6 +1,20 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'PARAM1', defaultValue: 'test', description: 'User to Approve')
+        string(name: 'PARAM2', defaultValue: 'Service_Adhoc_DevOps', description: 'Job to Trigger')
+        booleanParam(name: 'PARAM3_SDM', defaultValue: true, description: 'SDM Parameter')
+        booleanParam(name: 'PARAM4_OFFBOARDING', defaultValue: true, description: 'Offboarding Parameter')
+        booleanParam(name: 'PARAM5_TBSALES', defaultValue: true, description: 'TBSALES Parameter')
+        booleanParam(name: 'PARAM6_ENTITLEMENTS', defaultValue: true, description: 'Entitlements Parameter')
+        booleanParam(name: 'PARAM7_FILENET', defaultValue: true, description: 'Filenet Parameter')
+        booleanParam(name: 'PARAM8_CLIENTCENTRAL', defaultValue: true, description: 'Client Central Parameter')
+        booleanParam(name: 'PARAM9_RDM', defaultValue: true, description: 'RDM Parameter')
+        booleanParam(name: 'PARAM10_ALL', defaultValue: true, description: 'ALL Parameter')
+        choice(name: 'PARAM11_ANSIBLE_TAG', choices: 'sa01|sa03|sa04|sa05|lb01|lb02', description: 'Ansible Tag Parameter')
+    }
+
     stages {
         stage('Approval') {
             steps {
@@ -11,7 +25,7 @@ pipeline {
                         message: 'Do you want to trigger the Freestyle job?',
                         parameters: [choice(name: 'Proceed', choices: 'Yes|No', description: 'Choose whether to proceed')]
                     )
-                    
+
                     // Check the user's response
                     if (userInput == 'Yes') {
                         echo 'Approval received. Proceeding to trigger the job.'
@@ -25,8 +39,23 @@ pipeline {
         stage('Trigger Freestyle Job') {
             steps {
                 script {
-                    // Trigger the Freestyle job by name
-                    build job: 'YourFreestyleJobName', wait: false
+                    // Define parameters to pass to the triggered job
+                    def jobParams = [
+                        [$class: 'StringParameterValue', name: 'APPROVER_USER', value: params.PARAM1],
+                        [$class: 'StringParameterValue', name: 'JOB_TO_TRIGGER', value: params.PARAM2],
+                        [$class: 'BooleanParameterValue', name: 'SDM', value: params.PARAM3_SDM],
+                        [$class: 'BooleanParameterValue', name: 'OFFBOARDING', value: params.PARAM4_OFFBOARDING],
+                        [$class: 'BooleanParameterValue', name: 'TBSALES', value: params.PARAM5_TBSALES],
+                        [$class: 'BooleanParameterValue', name: 'ENTITLEMENTS', value: params.PARAM6_ENTITLEMENTS],
+                        [$class: 'BooleanParameterValue', name: 'FILENET', value: params.PARAM7_FILENET],
+                        [$class: 'BooleanParameterValue', name: 'CLIENTCENTRAL', value: params.PARAM8_CLIENTCENTRAL],
+                        [$class: 'BooleanParameterValue', name: 'RDM', value: params.PARAM9_RDM],
+                        [$class: 'BooleanParameterValue', name: 'ALL', value: params.PARAM10_ALL],
+                        [$class: 'StringParameterValue', name: 'ANSIBLE_TAG', value: params.PARAM11_ANSIBLE_TAG]
+                    ]
+
+                    // Trigger the Freestyle job by name with parameters
+                    build job: params.PARAM2, parameters: jobParams, wait: false
                 }
             }
         }
