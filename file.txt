@@ -1,0 +1,15 @@
+---
+- name: Extract Version from Jar Name
+  hosts: localhost
+  gather_facts: false
+  vars:
+    jar: "{{ jar_name }}"  # Define the jar_name as an extra variable
+
+  tasks:
+    - name: Extract version from jar name
+      set_fact:
+        version: "{{ jar | regex_search('-(\\d+\\.\\d+(-\\w+)?)', '\\1') }}"
+
+    - name: Display extracted version
+      debug:
+        var: version
