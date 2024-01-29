@@ -8,7 +8,7 @@
   tasks:
     - name: Extract version from jar name
       set_fact:
-        version: "{{ jar | regex_search('-(\\d+\\.\\d+(-\\w+)?)', '\\1') }}"
+        version: "{{ jar | regex_search('-(\\d+\\.\\d+[^-]*)', '\\1') }}"
 
     - name: Display extracted version
       debug:
