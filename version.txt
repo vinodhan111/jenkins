@@ -1,0 +1,27 @@
+---
+- name: Update Application Versions
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Read the JSON file
+      slurp:
+        path: path/to/version/file.json
+      register: version_file
+
+    - name: Convert JSON content to dictionary
+      set_fact:
+        version_data: "{{ version_file.content | b64decode | from_json }}"
+
+    - name: Update SDM version
+      set_fact:
+        version_data.sdm.version: "{{ sdm_v }}"
+
+    - name: Update OFFB version
+      set_fact:
+        version_data.offb.version: "{{ offb_version }}"
+
+    - name: Write updated content back to JSON file
+      copy:
+        content: "{{ version_data | to_json | b64encode }}"
+        dest: path/to/version/file.json
